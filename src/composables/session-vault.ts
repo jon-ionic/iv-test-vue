@@ -9,10 +9,7 @@ import { useVaultFactory } from '@/composables/vault-factory';
 import { Session } from '@/models/session';
 import { ref } from 'vue';
 
-export type UnlockMode =
-  | 'BiometricsWithPasscode'
-  | 'InMemory'
-  | 'SecureStorage';
+export type UnlockMode = 'BiometricsWithPasscode' | 'InMemory' | 'SecureStorage';
 
 const { createVault } = useVaultFactory();
 const vault: Vault | BrowserVault = createVault();
@@ -23,6 +20,7 @@ const initializeVault = async (): Promise<void> => {
     key: 'io.ionic.gettingstartediv',
     type: VaultType.SecureStorage,
     deviceSecurityType: DeviceSecurityType.None,
+    lockAfterBackgrounded: 2000,
   });
 
   vault.onLock(() => (session.value = null))
@@ -51,14 +49,28 @@ const lockSession = async (): Promise<void> => {
   session.value = null;
 };
 
+const unlockSession = async (): Promise<void> => {
+  await vault.unlock();
+  session.value = await vault.getValue<Session>('session');
+};
+
+const sessionIsLocked = async (): Promise<boolean> => {
+  return (
+    vault.config?.type !== VaultType.SecureStorage &&
+    vault.config?.type !== VaultType.InMemory &&
+    !(await vault.isEmpty()) &&
+    (await vault.isLocked())
+  );
+};
 
 const updateUnlockMode = async (mode: UnlockMode): Promise<void> => {
   const type =
     mode === 'BiometricsWithPasscode'
       ? VaultType.DeviceSecurity
-      : mode === 'InMemory' ? VaultType.InMemory : VaultType.SecureStorage;
-  const deviceSecurityType =
-    type === VaultType.DeviceSecurity ? DeviceSecurityType.Both : DeviceSecurityType.None;
+      : mode === 'InMemory' 
+        ? VaultType.InMemory 
+        : VaultType.SecureStorage;
+  const deviceSecurityType = type === VaultType.DeviceSecurity ? DeviceSecurityType.Both : DeviceSecurityType.None;
   await vault.updateConfig({
     ...(vault.config as IdentityVaultConfig),
     type,
@@ -74,4 +86,6 @@ export const useSessionVault = (): any => ({
   storeSession,
   updateUnlockMode,
   lockSession,
+  unlockSession,
+  sessionIsLocked,
 });

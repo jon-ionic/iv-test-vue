@@ -15,19 +15,8 @@
       <ion-list>
         <ion-item>
           <ion-label>
-            <ion-button expand="block" @click="getSession">Get</ion-button>
-          </ion-label>
-        </ion-item>
-        <ion-item>
-          <ion-label>
-            <ion-button expand="block" @click="storeClicked">Store</ion-button>
-          </ion-label>
-        </ion-item>
-        <ion-item>
-          <ion-label>
-            <ion-button expand="block" color="danger" @click="clearSession"
-              >Clear</ion-button
-            >
+            <ion-button expand="block" color="danger" @click="logoutClicked"
+              >Logout</ion-button>
           </ion-label>
         </ion-item>
         <ion-item>
@@ -36,8 +25,7 @@
               expand="block"
               color="secondary"
               @click="updateUnlockMode('BiometricsWithPasscode')"
-              >Use Biometrics</ion-button
-            >
+              >Use Biometrics</ion-button>
           </ion-label>
         </ion-item>
         <ion-item>
@@ -46,8 +34,7 @@
               expand="block"
               color="secondary"
               @click="updateUnlockMode('InMemory')"
-              >Use In Memory</ion-button
-            >
+              >Use In Memory</ion-button>
           </ion-label>
         </ion-item>
         <ion-item>
@@ -56,15 +43,7 @@
               expand="block"
               color="secondary"
               @click="updateUnlockMode('SecureStorage')"
-              >Use Secure Storage</ion-button
-            >
-          </ion-label>
-        </ion-item>
-        <ion-item>
-          <ion-label>
-            <ion-button expand="block" color="warning" @click="lockSession"
-              >Lock</ion-button
-            >
+              >Use Secure Storage</ion-button>
           </ion-label>
         </ion-item>
         <ion-item>
@@ -81,35 +60,27 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthentication } from '@/composables/authentication';
+import { useSessionVault } from '@/composables/session-vault';
 import {
   IonButton,
   IonContent,
+  IonHeader,
   IonItem,
   IonLabel,
   IonList,
   IonPage,
-  IonHeader,
   IonTitle,
   IonToolbar,
 } from '@ionic/vue';
-import { useSessionVault } from '@/composables/session-vault';
+import { useRouter } from 'vue-router';
 
-const { 
-  session, 
-  storeSession, 
-  getSession, 
-  clearSession, 
-  updateUnlockMode,
-  lockSession,
-} = useSessionVault();
+const { logout } = useAuthentication();
+const { session, updateUnlockMode } = useSessionVault();
+const router = useRouter();
 
-const storeClicked = async (): Promise<void> => {
-  await storeSession({
-    email: 'test@ionic.io',
-    firstName: 'Tessa',
-    lastName: 'Testsmith',
-    accessToken: '4abf1d79-143c-4b89-b478-19607eb5ce97',
-    refreshToken: '565111b6-66c3-4527-9238-6ea2cc017126',
-  });
+const logoutClicked = async (): Promise<void> => {
+  await logout();
+  router.replace('/');
 };
 </script>
