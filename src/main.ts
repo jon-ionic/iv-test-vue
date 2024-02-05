@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router';
 
 import { IonicVue } from '@ionic/vue';
+import { useSessionVault } from './composables/session-vault';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -23,10 +24,12 @@ import '@ionic/vue/css/display.css';
 /* Theme variables */
 import './theme/variables.css';
 
+const { initializeVault } = useSessionVault();
 const app = createApp(App)
   .use(IonicVue)
   .use(router);
   
-router.isReady().then(() => {
+router.isReady().then(async () => {
+  await initializeVault()
   app.mount('#app');
 });
